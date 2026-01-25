@@ -1,0 +1,30 @@
+{
+  "ansatz_type": "adapted_RY-CX",
+  "ansatz_depth": 1,
+  "optimizer": "COBYLA",
+  "max_iter": 30,
+  "shot_count": 4096,
+  "components": {
+    "QPCC": true,
+    "NAGC": true,
+    "ORRC": true,
+    "LCSC": true
+  },
+  "hardware_params": {
+    "superconducting": {
+      "alpha_omega": 0.645,
+      "G_i": 1.18,
+      "kappa_c_eff": 0.001
+    },
+    "ion_trap": {
+      "alpha_omega": 0.721,
+      "G_i": 1.20,
+      "kappa_c_eff": 0.0008
+    },
+    "neutral_atom": {
+      "alpha_omega": 0.612,
+      "G_i": 1.17,
+      "kappa_c_eff": 0.0012
+    }
+  }
+}
