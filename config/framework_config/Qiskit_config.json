@@ -1,0 +1,8 @@
+{
+  "ansatz_type": "RY-CX",
+  "ansatz_depth": 2,
+  "optimizer": "COBYLA",
+  "max_iter": 100,
+  "shot_count": 4096,
+  "noise_suppression": "default"
+}
