@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# 设置中文字体
+# 设置中文字体，解决图表中文乱码
 plt.rcParams['font.sans-serif'] = ['SimHei']
 plt.rcParams['axes.unicode_minus'] = False
 
@@ -99,11 +99,48 @@ def generate_ablation_plot():
     plt.savefig("../result/figure/ablation_experiment.png", dpi=300, bbox_inches='tight')
     print("消融实验图表已生成")
 
+def generate_real_industrial_noise_table():
+    """生成真实工业环境噪声实验表格（对应原文表3）"""
+    data = load_raw_data("../result/raw_data/real_industrial_noise_results.json")
+    frameworks = ["QSPAC", "QiskitAer", "Cirq"]
+    metrics = ["effective_qubits", "success_rate", "energy_error", "resource_utilization", 
+               "total_time", "crosstalk_loss", "gate_count", "schedule_delay"]
+    
+    table_data = []
+    for metric in metrics:
+        row = {"评估维度": metric}
+        for fw in frameworks:
+            mean = np.mean([r[metric] for r in data[fw]])
+            std = np.std([r[metric] for r in data[fw]])
+            if metric == "success_rate":
+                row[fw] = f"{mean*100:.1f}%±{std*100:.1f}%"
+            else:
+                row[fw] = f"{mean:.3f}±{std:.3f}"
+        # 计算QSPAC相对优势（和原文加权提升逻辑一致）
+        qiskit_val = np.mean([r[metric] for r in data["QiskitAer"]])
+        cirq_val = np.mean([r[metric] for r in data["Cirq"]])
+        qspac_val = np.mean([r[metric] for r in data["QSPAC"]])
+        if metric in ["effective_qubits", "energy_error", "total_time", "crosstalk_loss", "gate_count", "schedule_delay"]:
+            qiskit_adv = (qiskit_val - qspac_val) / qiskit_val * 100
+            cirq_adv = (cirq_val - qspac_val) / cirq_val * 100
+            row["QSPAC相对优势"] = f"节省{qiskit_adv:.1f}%/{cirq_adv:.1f}%"
+        else:
+            qiskit_adv = qspac_val / qiskit_val
+            cirq_adv = qspac_val / cirq_val
+            row["QSPAC相对优势"] = f"提升{qiskit_adv:.1f}倍/{cirq_adv:.1f}倍"
+        table_data.append(row)
+    
+    df = pd.DataFrame(table_data)
+    df.to_csv("../result/table/real_industrial_noise_comparison.csv", index=False, encoding="utf-8-sig")
+    print("真实工业环境噪声实验表格已生成")
+    return df
+
 def main():
     """生成所有分析结果和可视化图表"""
     generate_benchmark_table()
     generate_极限_load_plot()
     generate_ablation_plot()
+    generate_real_industrial_noise_table()  # 调用新增工业噪声实验表格生成
     
     # 生成加权总提升百分比（对应原文5.2.2）
     benchmark_data = load_raw_data("../result/raw_data/benchmark_results.json")
@@ -121,14 +158,14 @@ def main():
     # 计算相对于Qiskit Aer的加权提升
     qiskit_weights = 0
     for metric, weight in weights.items():
-        qspac_val = benchmark_data["QSPAC"][metric]["mean"]
-        qiskit_val = benchmark_data["QiskitAer"][metric]["mean"]
+        qspac_val = benchmark_data["QSPAC"][metric]["mean"] if metric in benchmark_data["QSPAC"] else 0
+        qiskit_val = benchmark_data["QiskitAer"][metric]["mean"] if metric in benchmark_data["QiskitAer"] else 1
         if metric in ["effective_qubits", "energy_error", "crosstalk_loss", "gate_count", "schedule_delay", "total_time"]:
             # 越小越优：提升率=(传统值-QSPAC值)/传统值
-            gain = (qiskit_val - qspac_val) / qiskit_val
+            gain = (qiskit_val - qspac_val) / qiskit_val if qiskit_val !=0 else 0
         else:
             # 越大越优：提升率=(QSPAC值-传统值)/传统值
-            gain = (qspac_val - qiskit_val) / qiskit_val
+            gain = (qspac_val - qiskit_val) / qiskit_val if qiskit_val !=0 else 0
         qiskit_weights += gain * weight
     
     print(f"相对于Qiskit Aer的加权总提升：{qiskit_weights * 100:.2f}%")
@@ -136,12 +173,12 @@ def main():
     # 计算相对于Cirq的加权提升
     cirq_weights = 0
     for metric, weight in weights.items():
-        qspac_val = benchmark_data["QSPAC"][metric]["mean"]
-        cirq_val = benchmark_data["Cirq"][metric]["mean"]
+        qspac_val = benchmark_data["QSPAC"][metric]["mean"] if metric in benchmark_data["QSPAC"] else 0
+        cirq_val = benchmark_data["Cirq"][metric]["mean"] if metric in benchmark_data["Cirq"] else 1
         if metric in ["effective_qubits", "energy_error", "crosstalk_loss", "gate_count", "schedule_delay", "total_time"]:
-            gain = (cirq_val - qspac_val) / cirq_val
+            gain = (cirq_val - qspac_val) / cirq_val if cirq_val !=0 else 0
         else:
-            gain = (qspac_val - cirq_val) / cirq_val
+            gain = (qspac_val - cirq_val) / cirq_val if cirq_val !=0 else 0
         cirq_weights += gain * weight
     
     print(f"相对于Cirq的加权总提升：{cirq_weights * 100:.2f}%")
@@ -149,4 +186,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
