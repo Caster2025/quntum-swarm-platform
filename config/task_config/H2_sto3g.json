@@ -1,0 +1,8 @@
+{
+  "molecule": "H2",
+  "basis_set": "sto-3g",
+  "target_energy": -1.137260277,
+  "num_qubits": 4,
+  "electron_count": 2,
+  "description": "H2分子基态能量求解标准任务"
+}
