@@ -1,0 +1,8 @@
+{
+  "molecule": "LiH",
+  "basis_set": "sto-3g",
+  "target_energy": -7.98006442,
+  "num_qubits": 6,
+  "electron_count": 4,
+  "description": "LiH分子基态能量求解任务"
+}
