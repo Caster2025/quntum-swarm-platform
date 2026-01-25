@@ -1,0 +1,7 @@
+{
+  "problem_type": "max_cut",
+  "num_nodes": 6,
+  "adjacency_matrix": [[0,1,1,0,0,0],[1,0,1,1,0,0],[1,1,0,1,1,0],[0,1,1,0,1,1],[0,0,1,1,0,1],[0,0,0,1,1,0]],
+  "target_cut_value": 8,
+  "description": "6节点最大割问题"
+}
