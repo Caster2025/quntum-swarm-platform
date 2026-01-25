@@ -1,0 +1,8 @@
+{
+  "ansatz_type": "TwoLocal",
+  "ansatz_depth": 3,
+  "optimizer": "L-BFGS-B",
+  "max_iter": 150,
+  "shot_count": 4096,
+  "noise_suppression": "static_decoupling"
+}
