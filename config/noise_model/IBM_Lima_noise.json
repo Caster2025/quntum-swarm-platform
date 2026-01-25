@@ -1,0 +1,9 @@
+{
+  "T1": 100.0,
+  "T2": 50.0,
+  "single_qubit_depolar_prob": 0.001,
+  "two_qubit_crosstalk_prob": 0.002,
+  "readout_error_0to1": 0.01,
+  "readout_error_1to0": 0.02,
+  "description": "IBM Lima实测噪声模型"
+}
